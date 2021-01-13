@@ -82,13 +82,19 @@ else:
     max_country = pivot[pivot["Country"]==add_selectbox]
     c_text = True
 
+
+if (max_country["Female"].values[0]) >(max_country["Male"].values[0]):
+    compare_text = "This means females are ***" + str(round((max_country["Female"].values[0])/(max_country["Male"].values[0]),2))+ "*** times more likely to be infected than males."
+else:
+    compare_text = "This means females are ***" + str(round((max_country["Female"].values[0])/(max_country["Male"].values[0]),2))+ "*** times less likely to be infected than males."
+
 if c_text:
     col1.write(
         "In the year " + str(year_slider) + ", in ***" +
         max_country["Country"].values[0] +
         "***, females had an infection rate of " +
         str(max_country["Female"].values[0]) + " per 1000 uninfected females, while males had an infection rate of " + str(max_country["Male"].values[0]) +
-        " per 1000 uninfected males. For a difference of ***" + str(abs(round(max_country["Diff"].values[0], 2))) +".***"
+        " per 1000 uninfected males. " + compare_text
         )
 else:
     col1.write(
@@ -96,7 +102,7 @@ else:
         max_country["Country"].values[0] +
         "*** had the " + text + " gap between rates of new HIV infections between females and males. Females had an infection rate of " +
         str(max_country["Female"].values[0]) + " per 1000 uninfected females, while males had an infection rate of " + str(max_country["Male"].values[0]) +
-        " per 1000 uninfected males. For a difference of ***" + str(abs(round(max_country["Diff"].values[0], 2))) +".***"
+        " per 1000 uninfected males. " + compare_text
         )
 
 
@@ -127,6 +133,11 @@ line_chart = alt.Chart(cdf).mark_line().encode(
 
 max_country["Year"] = year_slider
 
+max_country["Times"] = round(max_country["Female"]/max_country["Male"],2)
+max_country["Times"] = max_country["Times"].astype("str")
+max_country["Times"] = max_country["Times"] + "x"
+
+
 gap = alt.Chart(max_country).mark_rule().encode(
     x="Year",
     y="Female",
@@ -137,9 +148,10 @@ gap = alt.Chart(max_country).mark_rule().encode(
 text = gap.mark_text(
     align="left",
     baseline="top",
-    dx=4
+    dx=4,
+    dy=10
 ).encode(
-    text="Diff"
+    text="Times"
 )
 
 diff_chart = line_chart + gap + text
